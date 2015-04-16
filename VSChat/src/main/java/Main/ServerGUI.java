@@ -19,6 +19,11 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 	// my server
 	private Server server;
 	
+	// entry point to start the Server
+	public static void main(String[] arg) {
+		// start server default port 1500
+		new ServerGUI(1500);
+	}
 	
 	// server constructor that receive the port to listen to for connection as parameter
 	ServerGUI(int port) {
@@ -84,7 +89,7 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 			appendEvent("Invalid port number");
 			return;
 		}
-		// ceate a new Server
+		// create a new Server
 		server = new Server(port, this);
 		// and start it as a thread
 		new ServerRunning().start();
@@ -92,12 +97,6 @@ public class ServerGUI extends JFrame implements ActionListener, WindowListener 
 		tPortNumber.setEditable(false);
 	}
 	
-	// entry point to start the Server
-	public static void main(String[] arg) {
-		// start server default port 1500
-		new ServerGUI(1500);
-	}
-
 	/*
 	 * If the user click the X button to close the application
 	 * I need to close the connection with the server to free the port

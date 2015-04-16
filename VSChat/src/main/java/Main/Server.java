@@ -5,6 +5,9 @@ import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.lightcouch.CouchDbClient;
+import org.lightcouch.CouchDbProperties;
+
 /*
  * The server that can be run both as a console application or a GUI
  */
@@ -22,6 +25,9 @@ public class Server {
 	// the boolean that will be turned of to stop the server
 	private boolean keepGoing;
 	
+	private Map<String, Object> map = new HashMap<String, Object>();
+	private CouchDbClient dbClient;
+	
 
 	/*
 	 *  server constructor that receive the port to listen to for connection as parameter
@@ -29,6 +35,7 @@ public class Server {
 	 */
 	public Server(int port) {
 		this(port, null);
+		this.couchDBconnect();
 	}
 	
 	public Server(int port, ServerGUI sg) {
@@ -40,6 +47,20 @@ public class Server {
 		sdf = new SimpleDateFormat("HH:mm:ss");
 		// ArrayList for the Client list
 		al = new ArrayList<ClientThread>();
+		
+		this.couchDBconnect();
+	}
+	
+	public void couchDBconnect(){
+		CouchDbProperties properties = new CouchDbProperties()
+			.setDbName("Chat-db")
+			.setCreateDbIfNotExist(true)
+			.setProtocol("http")
+			.setHost("127.0.0.1")
+			.setPort(5984)
+			.setMaxConnections(100)
+			.setConnectionTimeout(0);
+		dbClient = new CouchDbClient(properties);
 	}
 	
 	public void start() {
@@ -248,6 +269,13 @@ public class Server {
 
 				case ChatMessage.MESSAGE:
 					broadcast(username + ": " + message);
+					
+					// write into database
+					map.put("_id", "1");
+					map.put("username", username);
+					map.put("message", message);
+					dbClient.save(map);
+					
 					break;
 				case ChatMessage.LOGOUT:
 					display(username + " disconnected with a LOGOUT message.");

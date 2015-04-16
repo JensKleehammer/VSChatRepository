@@ -3,4 +3,11 @@
   <groupId>JensKleehammerOliverSchleidt</groupId>
   <artifactId>VSChat</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.lightcouch</groupId>
+  		<artifactId>lightcouch</artifactId>
+  		<version>0.1.6</version>
+  	</dependency>
+  </dependencies>
 </project>
