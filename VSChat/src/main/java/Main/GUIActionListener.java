@@ -3,6 +3,8 @@ package Main;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JFrame;
+
 public class GUIActionListener implements ActionListener{
 	private ClientGUI clientGui; 
 	
@@ -16,20 +18,16 @@ public class GUIActionListener implements ActionListener{
 		// if it is the Logout button
 		if(o == clientGui.getLogout()) {
 //			client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
-			clientGui.getClient().disconnect();
-			clientGui.setVisible(false);
+			clientGui.getDbClient().getCouchDbClient().shutdown();
+			System.exit(0);
 			return;
 		}
-		// if it the who is in button
-//		if(o == clientGui.getWhoIsIn()) {
-//			clientGui.getClient().sendMessage(new ChatMessage(ChatMessage.WHOISIN, ""));				
-//			return;
-//		}
 
 		// ok it is coming from the JTextField
 		if(clientGui.isConnected()) {
 			// just have to send the message
-			clientGui.getClient().sendMessage(new ChatMessage(ChatMessage.MESSAGE, clientGui.getTextfield().getText()));				
+			clientGui.getDbClient().writeMessage(clientGui.getTextfield().getText(), clientGui.getUsername());				
+			clientGui.append(clientGui.getTextfield().getText());
 			clientGui.getTextfield().setText("");
 			return;
 		}

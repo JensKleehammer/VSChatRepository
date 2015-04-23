@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 public class LogInActionListener implements ActionListener{
 	private LogIn logInClient;
 	private ClientGUI clientGui;
-//	private Client client;
 	private GUIActionListener guiActionListener;
 	
 	public LogInActionListener(LogIn logIn){
@@ -18,18 +17,9 @@ public class LogInActionListener implements ActionListener{
 		{
 			if(!logInClient.getTextField().getText().isEmpty())
 			{
-				clientGui = new ClientGUI();
+				clientGui = new ClientGUI(logInClient.getTextField().getText());
 				
-				new Client("127.0.0.1", 1500, 
-						logInClient.getTextField().getText(), clientGui);
-				
-				clientGui.getClient().start();
-				clientGui.setConnected(true);
-				
-				clientGui.setTitle(logInClient.getTextField().getText());
-				
-				guiActionListener = new GUIActionListener(clientGui);
-				
+				guiActionListener = new GUIActionListener(clientGui);				
 				clientGui.getTextfield().addActionListener(guiActionListener);
 				
 				logInClient.setVisible(false);
