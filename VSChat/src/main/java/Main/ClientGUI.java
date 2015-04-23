@@ -25,9 +25,9 @@ public class ClientGUI extends JFrame {
 	// to hold the Username and later on the messages
 	private JTextField textfield;
 	// to hold the server address an the port number
-	private JTextField tfServer, tfPort;
+//	private JTextField tfServer, tfPort;
 	// to Logout and get the list of the users
-	private JButton login, logout, whoIsIn;
+	private JButton logout;
 	// for the chat room
 	private JTextArea textArea;
 	// if it is for connection
@@ -35,14 +35,14 @@ public class ClientGUI extends JFrame {
 	// the Client object
 	private Client client;
 	// the default port number
-	private int defaultPort;
-	private String defaultHost;
+//	private int defaultPort;
+//	private String defaultHost;
 	private GUIActionListener guiActionListener;
 
 	// Constructor connection receiving a socket number
 	ClientGUI(/*Client client*/) {
 
-		super("Chat Client");
+//		super("Chat Client");
 //		defaultPort = port;
 //		defaultHost = host;
 		
@@ -53,7 +53,7 @@ public class ClientGUI extends JFrame {
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
 		// the server name anmd the port number
-		JPanel serverAndPort = new JPanel(new GridLayout(1,5, 1, 3));
+//		JPanel serverAndPort = new JPanel(new GridLayout(1,5, 1, 3));
 		// the two JTextField with default value for server address and port number
 //		tfServer = new JTextField(host);
 //		tfPort = new JTextField("" + port);
@@ -76,26 +76,26 @@ public class ClientGUI extends JFrame {
 		add(northPanel, BorderLayout.NORTH);
 
 		// The CenterPanel which is the chat room
-		this.textArea = new JTextArea("Welcome to the Chat room\n", 80, 80);
+		this.textArea = new JTextArea("", 80, 80);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(this.textArea));
 		this.textArea.setEditable(false);
 		add(centerPanel, BorderLayout.CENTER);
 
 		// the 3 buttons
-		login = new JButton("Login");
-		login.addActionListener(this.guiActionListener);
+//		login = new JButton("Login");
+//		login.addActionListener(this.guiActionListener);
 		logout = new JButton("Logout");
 		logout.addActionListener(this.guiActionListener);
-		logout.setEnabled(false);		// you have to login before being able to logout
-		whoIsIn = new JButton("Who is in");
-		whoIsIn.addActionListener(this.guiActionListener);
-		whoIsIn.setEnabled(false);		// you have to login before being able to Who is in
+		logout.setEnabled(true);		// you have to login before being able to logout
+//		whoIsIn = new JButton("Who is in");
+//		whoIsIn.addActionListener(this.guiActionListener);
+//		whoIsIn.setEnabled(true);		// you have to login before being able to Who is in
 
 		JPanel southPanel = new JPanel();
-		southPanel.add(login);
+//		southPanel.add(login);
 		southPanel.add(logout);
-		southPanel.add(whoIsIn);
+//		southPanel.add(whoIsIn);
 		add(southPanel, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -113,9 +113,9 @@ public class ClientGUI extends JFrame {
 	// called by the GUI is the connection failed
 	// we reset our buttons, label, textfield
 	void connectionFailed() {
-		login.setEnabled(true);
+//		login.setEnabled(true);
 		logout.setEnabled(false);
-		whoIsIn.setEnabled(false);
+//		whoIsIn.setEnabled(false);
 //		label.setText("Enter your username below");
 //		textfield.setText("Anonymous");
 		// reset port number and host name as a construction time
@@ -137,28 +137,13 @@ public class ClientGUI extends JFrame {
 		this.textfield = textfield;
 	}
 
-	public JButton getLogin() {
-		return login;
-	}
-
-	public void setLogin(JButton login) {
-		this.login = login;
-	}
-
+	
 	public JButton getLogout() {
 		return logout;
 	}
 
 	public void setLogout(JButton logout) {
 		this.logout = logout;
-	}
-
-	public JButton getWhoIsIn() {
-		return whoIsIn;
-	}
-
-	public void setWhoIsIn(JButton whoIsIn) {
-		this.whoIsIn = whoIsIn;
 	}
 
 	public Client getClient() {
