@@ -41,7 +41,8 @@ public class ClientGUI extends JFrame {
 		super(username);
 		this.setUsername(username);
 		this.guiActionListener = new GUIActionListener(this);
-		this.setDbClient(new DBClient());
+		this.setDbClient(new DBClient(this));
+		this.dbClient.start();
 		
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3,1));

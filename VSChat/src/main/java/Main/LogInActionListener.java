@@ -21,6 +21,7 @@ public class LogInActionListener implements ActionListener{
 				
 				guiActionListener = new GUIActionListener(clientGui);				
 				clientGui.getTextfield().addActionListener(guiActionListener);
+				clientGui.setConnected(true);
 				
 				logInClient.setVisible(false);
 			}
