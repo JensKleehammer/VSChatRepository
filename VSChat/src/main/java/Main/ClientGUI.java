@@ -25,7 +25,7 @@ public class ClientGUI extends JFrame {
 	// to hold the Username and later on the messages
 	private JTextField textfield;
 	// to Logout and get the list of the users
-	private JButton logout;
+	private JButton logout, lastHour, lastSevenDays, showAll;
 	// for the chat room
 	private JTextArea textArea;
 	// if it is for connection
@@ -66,8 +66,23 @@ public class ClientGUI extends JFrame {
 		logout.addActionListener(this.guiActionListener);
 		logout.setEnabled(true);		// you have to login before being able to logout
 
+		lastHour = new JButton("Last Hour");
+		lastHour.addActionListener(this.guiActionListener);
+		lastHour.setEnabled(true);
+		
+		lastSevenDays = new JButton("Last 7 days");
+		lastSevenDays.addActionListener(this.guiActionListener);
+		lastSevenDays.setEnabled(true);
+		
+		showAll = new JButton("Show all");
+		showAll.addActionListener(this.guiActionListener);
+		showAll.setEnabled(true);
+		
 		JPanel southPanel = new JPanel();
 		southPanel.add(logout);
+		southPanel.add(lastHour);
+		southPanel.add(lastSevenDays);
+		southPanel.add(showAll);
 		add(southPanel, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -75,6 +90,18 @@ public class ClientGUI extends JFrame {
 		setVisible(true);
 		textfield.requestFocus();
 
+	}
+
+	public JButton getLastSevenDays() {
+		return lastSevenDays;
+	}
+
+	public JButton getShowAll() {
+		return showAll;
+	}
+
+	public JButton getLastHour() {
+		return lastHour;
 	}
 
 	// called by the Client to append text in the TextArea 

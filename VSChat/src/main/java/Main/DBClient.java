@@ -1,6 +1,6 @@
 package Main;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -12,8 +12,8 @@ import org.lightcouch.CouchDbInfo;
 import org.lightcouch.CouchDbProperties;
 import org.lightcouch.ReplicationResult;
 import org.lightcouch.Replicator;
+import org.lightcouch.View;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class DBClient extends Thread {
@@ -22,34 +22,23 @@ public class DBClient extends Thread {
 	private Replicator replicatorOne, replicatorTwo;
 	private Integer messageID;
 	private HashMap<String, Object> map;
-	private Date timestamp;
 	private ClientGUI clientGui;
-	private ChangesResult changesResult;
 	private Changes changes;
-	private List<ChangesResult.Row> rows;
-	private JsonElement jsonElement;
+	private SimpleDateFormat dateFormat;
 
 	public DBClient(ClientGUI clientGui) {
+		this.dateFormat = new SimpleDateFormat("dd.MM.yyyy ' - ' HH:mm");
 		this.map = new HashMap<String, Object>();
 		this.messageID = 0;
 		this.couchDBconnect();
 		this.createReplication();
 		this.clientGui = clientGui;
-		
+
 		CouchDbInfo info = couchDbClient.context().info();
 		String since = info.getUpdateSeq();
-		
-//		this.changesResult = couchDbClient.changes()  .includeDocs(true)
-//				  .limit(20)
-//				  .since(since)
-//				  .getChanges();
-		
-//		this.rows = changesResult.getResults();
-		
-		this.changes = couchDbClient.changes().includeDocs(true)
-				.since(since)
-				.heartBeat(3000)
-				.continuousChanges();
+
+		this.changes = couchDbClient.changes().includeDocs(true).since(since)
+				.heartBeat(3000).continuousChanges();
 	}
 
 	private void couchDBconnect() {
@@ -78,23 +67,23 @@ public class DBClient extends Thread {
 	}
 
 	public void run() {
-		while (changes.hasNext()){
-			if(changes.next() != null)
-			{
+		while (changes.hasNext()) {
+			if (changes.next() != null) {
 				ChangesResult.Row feed = changes.next();
-				
-				String docId = feed.getId();
-				JsonObject document = feed.getDoc();	
-				
-				String message = document.get("username")+": " 
-							+ document.get("message");
 
-				clientGui.append(message+"\n");
+				String docId = feed.getId();
+				JsonObject document = feed.getDoc();
+
+				Date date = new Date(System.currentTimeMillis());
+
+				String message = dateFormat.format(date) + " "
+						+ document.get("username") + ": "
+						+ document.get("message");
+
+				clientGui.append(message + "\n");
 			}
 		}
 	}
-	
-	
 
 	public void writeMessage(String msg, String username) {
 		while (this.couchDbClient.contains("message" + messageID.toString())) {
@@ -105,13 +94,52 @@ public class DBClient extends Thread {
 		map.put("_id", "message" + messageID.toString());
 		map.put("username", username);
 		map.put("message", msg);
-		map.put("timestamp", System.currentTimeMillis());
+		map.put("timestamp", System.currentTimeMillis());// this.getDateAndTime());
 		this.couchDbClient.save(map);
 	}
 
-	public JsonObject readMessage() {
+	public void lastHour() {
+		List<JsonObject> listHour = couchDbClient.view("History/History")
+				.startKey(System.currentTimeMillis() - (60 * 60 * 1000))
+				.includeDocs(true).query(JsonObject.class);
 
-		return null;
+		for (JsonObject object : listHour) {
+
+			Date date = new Date(object.get("timestamp").getAsLong());
+
+			clientGui.append(dateFormat.format(date) + " "
+					+ object.get("username") + ": " + object.get("message")
+					+ "\n");
+		}
+	}
+	
+	public void lastSevenDays(){
+		List<JsonObject> listHour = couchDbClient.view("History/History")
+				.startKey(System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000))
+				.includeDocs(true).query(JsonObject.class);
+
+		for (JsonObject object : listHour) {
+
+			Date date = new Date(object.get("timestamp").getAsLong());
+
+			clientGui.append(dateFormat.format(date) + " "
+					+ object.get("username") + ": " + object.get("message")
+					+ "\n");
+		}
+	}
+	
+	public void completeHistory(){
+		List<JsonObject> listHour = couchDbClient.view("History/History")
+				.includeDocs(true).query(JsonObject.class);
+
+		for (JsonObject object : listHour) {
+
+			Date date = new Date(object.get("timestamp").getAsLong());
+
+			clientGui.append(dateFormat.format(date) + " "
+					+ object.get("username") + ": " + object.get("message")
+					+ "\n");
+		}
 	}
 
 	public CouchDbClient getCouchDbClient() {
