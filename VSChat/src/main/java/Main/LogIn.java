@@ -9,7 +9,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class LogIn extends JFrame{
 	/**
 	 * 
@@ -42,16 +46,6 @@ public class LogIn extends JFrame{
 		this.setLocation(600, 300);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
-	}
-	
-	public JTextField getTextField() {
-		return textField;
-	}
-	
-	public JButton getLogIn() {
-		return logIn;
-	}
-	
-	
+	}	
 }
 

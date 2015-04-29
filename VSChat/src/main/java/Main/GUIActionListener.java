@@ -10,6 +10,7 @@ public class GUIActionListener implements ActionListener {
 		this.clientGui = clientGui;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
 		// if it is the Logout button
@@ -21,15 +22,17 @@ public class GUIActionListener implements ActionListener {
 		}
 
 		if (o == clientGui.getLastHour()) {
-			clientGui.getDbClient().lastHour();
+			Long time = System.currentTimeMillis() - (60 * 60 * 1000);
+			clientGui.getDbClient().readHistory(time);
 		}
 
 		if (o == clientGui.getLastSevenDays()) {
-			clientGui.getDbClient().lastSevenDays();
+			Long time = (System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000));
+			clientGui.getDbClient().readHistory(time);
 		}
 		
 		if(o == clientGui.getShowAll()){
-			clientGui.getDbClient().completeHistory();
+			clientGui.getDbClient().readHistory(null);
 		}
 
 		// ok it is coming from the JTextField

@@ -11,12 +11,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
 /*
  * The Client with its GUI
  */
+@Getter
+@Setter
 public class ClientGUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -26,6 +32,7 @@ public class ClientGUI extends JFrame {
 	private JTextField textfield;
 	// to Logout and get the list of the users
 	private JButton logout, lastHour, lastSevenDays, showAll;
+
 	// for the chat room
 	private JTextArea textArea;
 	// if it is for connection
@@ -33,6 +40,7 @@ public class ClientGUI extends JFrame {
 	// the Client object
 	private DBClient dbClient;
 	private String username;
+	private JScrollPane scrollPane;
 
 	private GUIActionListener guiActionListener;
 
@@ -44,22 +52,33 @@ public class ClientGUI extends JFrame {
 		this.setDbClient(new DBClient(this));
 		this.dbClient.start();
 		
-		// The NorthPanel with:
-		JPanel northPanel = new JPanel(new GridLayout(3,1));
+		// the Panels
+		JPanel northPanel = new JPanel(new GridLayout(1,1));
+		JPanel centerPanel = new JPanel(new GridLayout(2,1));
+		JPanel southPanel = new JPanel();
+		
+		// The NorthPanel which is the chat room
+		
+		this.textArea = new JTextArea("", 30, 30);
+		this.textArea.setLineWrap(true);
+		this.textArea.setWrapStyleWord(true);
+		
+		
+		this.scrollPane = new JScrollPane(this.textArea);
+		this.scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		this.scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		northPanel.add(this.scrollPane);
+		this.textArea.setEditable(false);
+		add(northPanel, BorderLayout.NORTH);
+		
+
 
 		// the Label and the TextField
-		label = new JLabel("Enter your message below", SwingConstants.CENTER);
-		northPanel.add(label);
+		label = new JLabel("Message:", SwingConstants.LEFT);
+		centerPanel.add(label);
 		textfield = new JTextField("");
 		textfield.setBackground(Color.WHITE);
-		northPanel.add(textfield);
-		add(northPanel, BorderLayout.NORTH);
-
-		// The CenterPanel which is the chat room
-		this.textArea = new JTextArea("", 80, 80);
-		JPanel centerPanel = new JPanel(new GridLayout(1,1));
-		centerPanel.add(new JScrollPane(this.textArea));
-		this.textArea.setEditable(false);
+		centerPanel.add(textfield);
 		add(centerPanel, BorderLayout.CENTER);
 
 		logout = new JButton("Logout");
@@ -78,7 +97,6 @@ public class ClientGUI extends JFrame {
 		showAll.addActionListener(this.guiActionListener);
 		showAll.setEnabled(true);
 		
-		JPanel southPanel = new JPanel();
 		southPanel.add(logout);
 		southPanel.add(lastHour);
 		southPanel.add(lastSevenDays);
@@ -92,63 +110,10 @@ public class ClientGUI extends JFrame {
 
 	}
 
-	public JButton getLastSevenDays() {
-		return lastSevenDays;
-	}
-
-	public JButton getShowAll() {
-		return showAll;
-	}
-
-	public JButton getLastHour() {
-		return lastHour;
-	}
-
 	// called by the Client to append text in the TextArea 
-	public void append(String str) {
-		textArea.append(str);
+	public void append(String message) {
+		textArea.append(message);
 		textArea.setCaretPosition(textArea.getText().length() - 1);
-	}
-
-	public JTextField getTextfield() {
-		return textfield;
-	}
-
-	public void setTextfield(JTextField textfield) {
-		this.textfield = textfield;
-	}
-
-	
-	public JButton getLogout() {
-		return logout;
-	}
-
-	public void setLogout(JButton logout) {
-		this.logout = logout;
-	}
-
-	public boolean isConnected() {
-		return connected;
-	}
-
-	public void setConnected(boolean connected) {
-		this.connected = connected;
-	}
-
-	public DBClient getDbClient() {
-		return dbClient;
-	}
-
-	public void setDbClient(DBClient dbClient) {
-		this.dbClient = dbClient;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 }
 

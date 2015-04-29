@@ -1,37 +1,44 @@
 package Main;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.lightcouch.Changes;
 import org.lightcouch.ChangesResult;
 import org.lightcouch.CouchDbClient;
+import org.lightcouch.CouchDbException;
 import org.lightcouch.CouchDbInfo;
 import org.lightcouch.CouchDbProperties;
-import org.lightcouch.ReplicationResult;
-import org.lightcouch.Replicator;
-import org.lightcouch.View;
 
 import com.google.gson.JsonObject;
 
+@Getter
+@Setter
 public class DBClient extends Thread {
 	private CouchDbClient couchDbClient;
-	private ReplicationResult replicationOne, replicationTwo;
-	private Replicator replicatorOne, replicatorTwo;
+	private CouchDbProperties properties;
 	private Integer messageID;
 	private HashMap<String, Object> map;
 	private ClientGUI clientGui;
 	private Changes changes;
 	private SimpleDateFormat dateFormat;
+	private List<String> serverList;
+	private String lastServer;
 
 	public DBClient(ClientGUI clientGui) {
 		this.dateFormat = new SimpleDateFormat("dd.MM.yyyy ' - ' HH:mm");
 		this.map = new HashMap<String, Object>();
 		this.messageID = 0;
+		this.serverList = new ArrayList<String>();
+		this.serverList.add(null);
+		this.serverList.add(null);
 		this.couchDBconnect();
-		this.createReplication();
 		this.clientGui = clientGui;
 
 		CouchDbInfo info = couchDbClient.context().info();
@@ -42,46 +49,46 @@ public class DBClient extends Thread {
 	}
 
 	private void couchDBconnect() {
-		CouchDbProperties properties = new CouchDbProperties()
+		lastServer = serverList.get((int)(Math.random()*serverList.size()));
+		try{
+		this.properties = new CouchDbProperties()
 				.setDbName("chat").setCreateDbIfNotExist(true)
 				.setProtocol("http").setHost("localhost").setPort(5984)
 				.setMaxConnections(100).setConnectionTimeout(0);
 		couchDbClient = new CouchDbClient(properties);
-	}
-
-	private void createReplication() {
-		this.setReplicationOne(couchDbClient.replication().source("chat")
-				.target("target_chat").createTarget(true).trigger());
-
-		this.setReplicationTwo(couchDbClient.replication()
-				.source("target_chat").target("chat").createTarget(true)
-				.trigger());
-
-		this.replicatorOne = couchDbClient.replicator().source("chat")
-				.target("target_chat").continuous(true);
-		this.replicatorOne.save();
-
-		this.replicatorTwo = couchDbClient.replicator().source("target_chat")
-				.target("chat").continuous(true);
-		this.replicatorTwo.save();
+		} catch (CouchDbException e){
+			this.reconnect();
+		}
 	}
 
 	public void run() {
-		while (changes.hasNext()) {
+		try {
+	while (changes.hasNext()) {
 			if (changes.next() != null) {
 				ChangesResult.Row feed = changes.next();
 
-				String docId = feed.getId();
 				JsonObject document = feed.getDoc();
 
 				Date date = new Date(System.currentTimeMillis());
 
-				String message = dateFormat.format(date) + " "
-						+ document.get("username") + ": "
-						+ document.get("message");
-
-				clientGui.append(message + "\n");
+				clientGui.append(dateFormat.format(date) + " "
+						+ document.get("username") + ":\n "
+						+ document.get("message") + "\n");
 			}
+		}
+		} catch (CouchDbException e) {
+			this.reconnect();
+		}
+	}
+	
+	public void reconnect(){
+		for (String serverAddress : this.serverList) {
+			if(!serverAddress.equals(this.lastServer)){
+				this.lastServer = serverAddress;
+				this.properties.setHost(serverAddress);
+				this.couchDbClient = new CouchDbClient(this.properties);
+			}
+			
 		}
 	}
 
@@ -98,71 +105,17 @@ public class DBClient extends Thread {
 		this.couchDbClient.save(map);
 	}
 
-	public void lastHour() {
-		List<JsonObject> listHour = couchDbClient.view("History/History")
-				.startKey(System.currentTimeMillis() - (60 * 60 * 1000))
-				.includeDocs(true).query(JsonObject.class);
+	public void readHistory(Long startKey) {
+		List<JsonObject> history = couchDbClient.view("History/History")
+				.startKey(startKey).includeDocs(true).query(JsonObject.class);
 
-		for (JsonObject object : listHour) {
-
-			Date date = new Date(object.get("timestamp").getAsLong());
-
-			clientGui.append(dateFormat.format(date) + " "
-					+ object.get("username") + ": " + object.get("message")
-					+ "\n");
-		}
-	}
-	
-	public void lastSevenDays(){
-		List<JsonObject> listHour = couchDbClient.view("History/History")
-				.startKey(System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000))
-				.includeDocs(true).query(JsonObject.class);
-
-		for (JsonObject object : listHour) {
+		for (JsonObject object : history) {
 
 			Date date = new Date(object.get("timestamp").getAsLong());
 
 			clientGui.append(dateFormat.format(date) + " "
-					+ object.get("username") + ": " + object.get("message")
+					+ object.get("username") + ":\n " + object.get("message")
 					+ "\n");
 		}
-	}
-	
-	public void completeHistory(){
-		List<JsonObject> listHour = couchDbClient.view("History/History")
-				.includeDocs(true).query(JsonObject.class);
-
-		for (JsonObject object : listHour) {
-
-			Date date = new Date(object.get("timestamp").getAsLong());
-
-			clientGui.append(dateFormat.format(date) + " "
-					+ object.get("username") + ": " + object.get("message")
-					+ "\n");
-		}
-	}
-
-	public CouchDbClient getCouchDbClient() {
-		return couchDbClient;
-	}
-
-	public void setCouchDbClient(CouchDbClient dbClient) {
-		this.couchDbClient = dbClient;
-	}
-
-	public ReplicationResult getReplicationOne() {
-		return replicationOne;
-	}
-
-	public void setReplicationOne(ReplicationResult replicationOne) {
-		this.replicationOne = replicationOne;
-	}
-
-	public ReplicationResult getReplicationTwo() {
-		return replicationTwo;
-	}
-
-	public void setReplicationTwo(ReplicationResult replicationTwo) {
-		this.replicationTwo = replicationTwo;
 	}
 }
