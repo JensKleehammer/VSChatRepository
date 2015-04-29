@@ -71,9 +71,9 @@ public class DBClient extends Thread {
 
 				Date date = new Date(System.currentTimeMillis());
 
-				clientGui.append(dateFormat.format(date) + " "
-						+ document.get("username") + ":\n "
-						+ document.get("message") + "\n");
+				clientGui.append(dateFormat.format(date) + "|\t "
+						+ document.get("username").getAsString().toUpperCase() + ":\n "
+						+ document.get("message").getAsString() + "\n");
 			}
 		}
 		} catch (CouchDbException e) {
@@ -87,18 +87,17 @@ public class DBClient extends Thread {
 				this.lastServer = serverAddress;
 				this.properties.setHost(serverAddress);
 				this.couchDbClient = new CouchDbClient(this.properties);
-			}
-			
+			}			
 		}
 	}
 
 	public void writeMessage(String msg, String username) {
-		while (this.couchDbClient.contains("message" + messageID.toString())) {
-			messageID++;
-		}
+//		while (this.couchDbClient.contains("message" + messageID.toString())) {
+//			messageID++;
+//		}
 
 		// write into database
-		map.put("_id", "message" + messageID.toString());
+//		map.put("_id", "message" + messageID.toString());
 		map.put("username", username);
 		map.put("message", msg);
 		map.put("timestamp", System.currentTimeMillis());// this.getDateAndTime());
@@ -110,12 +109,13 @@ public class DBClient extends Thread {
 				.startKey(startKey).includeDocs(true).query(JsonObject.class);
 
 		for (JsonObject object : history) {
-
+			String message;
 			Date date = new Date(object.get("timestamp").getAsLong());
 
-			clientGui.append(dateFormat.format(date) + " "
-					+ object.get("username") + ":\n " + object.get("message")
-					+ "\n");
+			message = dateFormat.format(date) + "| "
+					+ object.get("username").getAsString().toUpperCase() + ":\n " 
+					+ object.get("message").getAsString() + "\n";
+			clientGui.append(message);
 		}
 	}
 }

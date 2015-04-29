@@ -69,44 +69,45 @@ public class ClientGUI extends JFrame {
 		this.scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		northPanel.add(this.scrollPane);
 		this.textArea.setEditable(false);
-		add(northPanel, BorderLayout.NORTH);
+		this.add(northPanel, BorderLayout.NORTH);
 		
 
 
 		// the Label and the TextField
-		label = new JLabel("Message:", SwingConstants.LEFT);
+		this.label = new JLabel("Message:", SwingConstants.LEFT);
 		centerPanel.add(label);
-		textfield = new JTextField("");
-		textfield.setBackground(Color.WHITE);
+		this.textfield = new JTextField("");
+		this.textfield.setBackground(Color.WHITE);
 		centerPanel.add(textfield);
-		add(centerPanel, BorderLayout.CENTER);
+		this.add(centerPanel, BorderLayout.CENTER);
 
-		logout = new JButton("Logout");
-		logout.addActionListener(this.guiActionListener);
-		logout.setEnabled(true);		// you have to login before being able to logout
+		this.logout = new JButton("Logout");
+		this.logout.addActionListener(this.guiActionListener);
+		this.logout.setEnabled(true);		// you have to login before being able to logout
 
-		lastHour = new JButton("Last Hour");
-		lastHour.addActionListener(this.guiActionListener);
-		lastHour.setEnabled(true);
+		this.lastHour = new JButton("Last Hour");
+		this.lastHour.addActionListener(this.guiActionListener);
+		this.lastHour.setEnabled(true);
 		
-		lastSevenDays = new JButton("Last 7 days");
-		lastSevenDays.addActionListener(this.guiActionListener);
-		lastSevenDays.setEnabled(true);
+		this.lastSevenDays = new JButton("Last 7 days");
+		this.lastSevenDays.addActionListener(this.guiActionListener);
+		this.lastSevenDays.setEnabled(true);
 		
-		showAll = new JButton("Show all");
-		showAll.addActionListener(this.guiActionListener);
-		showAll.setEnabled(true);
+		this.showAll = new JButton("Show all");
+		this.showAll.addActionListener(this.guiActionListener);
+		this.showAll.setEnabled(true);
 		
 		southPanel.add(logout);
 		southPanel.add(lastHour);
 		southPanel.add(lastSevenDays);
 		southPanel.add(showAll);
-		add(southPanel, BorderLayout.SOUTH);
+		this.add(southPanel, BorderLayout.SOUTH);
 
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(600, 600);
-		setVisible(true);
-		textfield.requestFocus();
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setSize(600, 600);
+		this.setVisible(true);
+		this.setResizable(false);
+		this.textfield.requestFocus();
 
 	}
 
