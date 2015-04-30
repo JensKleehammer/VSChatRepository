@@ -49,6 +49,7 @@ public class DBClient extends Thread {
 		System.out.println(clientGui.getUsername() + " IP: "+ lastServer);
 	}
 
+// Diese methode stellt die Verbindung zu einer CouchDB her
 	private void couchDBconnect() {
 		lastServer = serverList.get((int) (Math.random() * serverList.size()));
 		try {
@@ -62,6 +63,7 @@ public class DBClient extends Thread {
 		}
 	}
 
+//	Generiert die Replicationen 
 	private void createReplication() {
 		this.replicationOne = this.couchDbClient.replication()
 				.source("http://172.16.40.5:5984/chat")
@@ -87,6 +89,9 @@ public class DBClient extends Thread {
 		this.replicatorTwo.save();
 	}
 
+/*  generiert ein Changes Objekt, welches auf Veränderungen auf der 
+*	datenbank achtet.
+*/
 	private void createChanges() {
 		CouchDbInfo info = this.couchDbClient.context().info();
 		String since = info.getUpdateSeq();
@@ -95,6 +100,13 @@ public class DBClient extends Thread {
 				.since(since).heartBeat(3000).continuousChanges();
 	}
 
+/*  In dieser Methode ist eine Dauerschleife implementiert, welche zyklisch
+ *  die Datenbank auf Änderungen abfrägt. Falls Änderungen vorhanden sind
+ *  werden diese ausgelesen und auf der GUI ausgegeben. Ist kein Abfragen 
+ *  möglich, da der Server nichtmehr vorhanden ist, wird die Methode reconncet
+ *  aufgerufen. Als Anzeigedatum wird das aktuelle Datum des Clients verwendet 
+ *  was jedoch später ausgetauscht werden sollte.
+ */
 	public void run() {
 		try {
 			while (changes.hasNext()) {
@@ -118,6 +130,10 @@ public class DBClient extends Thread {
 		}
 	}
 
+/* Stellt eine neue Verbindung zu einem existierenden Server her. Dabei muss 
+ * auch ein neues Changes Objekt generiert werden, da das alte Objekt noch den 
+ * falschen Server überprüft. Danach wird wieder die Dauerschleife aufgerufen  
+ */
 	public void reconnect() {
 		for (String serverAddress : this.serverList) {
 			if (!serverAddress.equals(this.lastServer)) {
@@ -135,6 +151,9 @@ public class DBClient extends Thread {
 		this.run();
 	}
 
+/*  Speichert die Nachrichten auf der Datenbank auch mit der aktuellen 
+ *	Clientzeit.
+ */
 	public void writeMessage(String msg, String username) {
 		// while (this.couchDbClient.contains("message" + messageID.toString()))
 		// {
@@ -149,6 +168,10 @@ public class DBClient extends Thread {
 		this.couchDbClient.save(map);
 	}
 
+/* Diese Methode ist für das auslesen der History zuständig.
+ * Es wird ein Startkey in Form eine Long übergeben. Alle JSON Objekte
+ * die nach diesem Startkey erstellt wurden werden ausgelesen und angezeigt
+ */
 	public void readHistory(Long startKey) {
 		List<JsonObject> history = couchDbClient.view("History/History")
 				.startKey(startKey).includeDocs(true).query(JsonObject.class);

@@ -111,7 +111,7 @@ public class ClientGUI extends JFrame {
 
 	}
 
-	// called by the Client to append text in the TextArea
+//	Zuständig die Nachrichten im TextArea anzuzeigen
 	public void append(String message) {
 		textArea.append(message);
 		textArea.setCaretPosition(textArea.getText().length() - 1);

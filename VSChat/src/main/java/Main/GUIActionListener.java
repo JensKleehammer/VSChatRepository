@@ -3,6 +3,10 @@ package Main;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/* Diese Klasse ist dafür zuständig, Events auf der GUI abzufragen und 
+ * entsprechende Schritte je nach Event auszuführen. Dabei erbt die Klasse
+ * von der Klasse ActionListener.  
+ */
 public class GUIActionListener implements ActionListener {
 	private ClientGUI clientGui;
 
@@ -10,39 +14,40 @@ public class GUIActionListener implements ActionListener {
 		this.clientGui = clientGui;
 	}
 
-	@SuppressWarnings("deprecation")
-	public void actionPerformed(ActionEvent e) {
-		Object o = e.getSource();
-		// if it is the Logout button
-		if (o == clientGui.getLogout()) {
+	public void actionPerformed(ActionEvent e) {		
+/* Die Verbindung zur CouchDB wird getrennt und der Client ist nichtmehr 
+ * connected. Des Weiteren wird das Fenster geschlossen.
+ */
+		if (e.getSource() == clientGui.getLogout()) {
 			clientGui.getDbClient().getCouchDbClient().shutdown();
-			clientGui.getDbClient().stop();
+			clientGui.setConnected(false);
 			System.exit(0);
 			return;
 		}
 
-		if (o == clientGui.getLastHour()) {
+		if (e.getSource() == clientGui.getLastHour()) {
 			Long time = System.currentTimeMillis() - (60 * 60 * 1000);
 			clientGui.getDbClient().readHistory(time);
 		}
 
-		if (o == clientGui.getLastSevenDays()) {
+		if (e.getSource() == clientGui.getLastSevenDays()) {
 			Long time = (System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000));
 			clientGui.getDbClient().readHistory(time);
 		}
 		
-		if(o == clientGui.getShowAll()){
+		if(e.getSource() == clientGui.getShowAll()){
 			clientGui.getDbClient().readHistory(null);
 		}
 
-		// ok it is coming from the JTextField
+/* Solange der Client connceted ist wird das geschriebene aus dem Textfeld
+ * in der Datenbank gespeichert und auf der GUI im TextArea angezeigt
+ */
 		if (clientGui.isConnected()
 				&& !clientGui.getTextfield().getText().isEmpty()) {
-			// just have to send the message
 			clientGui.getDbClient()
 					.writeMessage(clientGui.getTextfield().getText(),
 							clientGui.getUsername());
-			// clientGui.append(clientGui.getTextfield().getText());
+			
 			clientGui.getTextfield().setText("");
 			return;
 		}

@@ -25,6 +25,8 @@ public class LogIn extends JFrame{
 	private JButton logIn;
 	private LogInActionListener logInActionListener;
 	
+/*Hier wird das LogIn Fenster generiert mit dem Label, Textfeld und dem Button
+des weiteren wird der ActionListener initialisiert und dem Button hinzugefügt*/	
 	public LogIn(){
 		this.logInActionListener = new LogInActionListener(this);
 		
