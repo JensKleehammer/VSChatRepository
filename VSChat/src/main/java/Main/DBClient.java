@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.text.ChangedCharSetException;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +17,9 @@ import org.lightcouch.CouchDbClient;
 import org.lightcouch.CouchDbException;
 import org.lightcouch.CouchDbInfo;
 import org.lightcouch.CouchDbProperties;
+import org.lightcouch.Replication;
+import org.lightcouch.ReplicationResult;
+import org.lightcouch.Replicator;
 
 import com.google.gson.JsonObject;
 
@@ -24,6 +29,8 @@ public class DBClient extends Thread {
 	private CouchDbClient couchDbClient;
 	private CouchDbProperties properties;
 	private Integer messageID;
+	private ReplicationResult replicationOne, replicationTwo;
+	private Replicator replicatorOne, replicatorTwo;
 	private HashMap<String, Object> map;
 	private ClientGUI clientGui;
 	private Changes changes;
@@ -36,68 +43,108 @@ public class DBClient extends Thread {
 		this.map = new HashMap<String, Object>();
 		this.messageID = 0;
 		this.serverList = new ArrayList<String>();
-		this.serverList.add(null);
-		this.serverList.add(null);
+		this.serverList.add("172.16.40.5");
+		this.serverList.add("172.16.49.92");
 		this.couchDBconnect();
 		this.clientGui = clientGui;
-
-		CouchDbInfo info = couchDbClient.context().info();
-		String since = info.getUpdateSeq();
-
-		this.changes = couchDbClient.changes().includeDocs(true).since(since)
-				.heartBeat(3000).continuousChanges();
+		this.createChanges();
 	}
 
 	private void couchDBconnect() {
-		lastServer = serverList.get((int)(Math.random()*serverList.size()));
-		try{
-		this.properties = new CouchDbProperties()
-				.setDbName("chat").setCreateDbIfNotExist(true)
-				.setProtocol("http").setHost("localhost").setPort(5984)
-				.setMaxConnections(100).setConnectionTimeout(0);
-		couchDbClient = new CouchDbClient(properties);
-		} catch (CouchDbException e){
-			this.reconnect();
-		}
-	}
-
-	public void run() {
+		lastServer = serverList.get((int) (Math.random() * serverList.size()));
 		try {
-	while (changes.hasNext()) {
-			if (changes.next() != null) {
-				ChangesResult.Row feed = changes.next();
-
-				JsonObject document = feed.getDoc();
-
-				Date date = new Date(System.currentTimeMillis());
-
-				clientGui.append(dateFormat.format(date) + "|\t "
-						+ document.get("username").getAsString().toUpperCase() + ":\n "
-						+ document.get("message").getAsString() + "\n");
-			}
-		}
+			this.properties = new CouchDbProperties().setDbName("chat")
+					.setCreateDbIfNotExist(true).setProtocol("http")
+					.setHost(lastServer).setPort(5984).setMaxConnections(100)
+					.setConnectionTimeout(0);
+			couchDbClient = new CouchDbClient(properties);
 		} catch (CouchDbException e) {
 			this.reconnect();
 		}
 	}
-	
-	public void reconnect(){
-		for (String serverAddress : this.serverList) {
-			if(!serverAddress.equals(this.lastServer)){
-				this.lastServer = serverAddress;
-				this.properties.setHost(serverAddress);
-				this.couchDbClient = new CouchDbClient(this.properties);
-			}			
+
+	private void createReplication() {
+		this.replicationOne = this.couchDbClient.replication()
+				.source("http://172.16.40.5:5984/chat")
+				.target("http://172.16.49.92:5984/chat").createTarget(true)
+				.trigger();
+		
+		this.replicationTwo = this.couchDbClient.replication()
+				.source("http://172.16.49.92:5984/chat")
+				.target("http://172.16.40.5:5984/chat").createTarget(true)
+				.trigger();
+		
+		this.replicatorOne = this.couchDbClient.replicator()
+				.source("http://172.16.40.5:5984/chat")
+				.target("http://172.16.49.92:5984/chat")
+				.continuous(true);
+		
+		this.replicatorTwo = this.couchDbClient.replicator()
+				.source("http://172.16.49.92:5984/chat")
+				.target("http://172.16.40.5:5984/chat")
+				.continuous(true);
+		
+		this.replicatorOne.save();
+		this.replicatorTwo.save();
+	}
+
+	private void createChanges() {
+		CouchDbInfo info = this.couchDbClient.context().info();
+		String since = info.getUpdateSeq();
+
+		this.changes = this.couchDbClient.changes().includeDocs(true)
+				.since(since).heartBeat(3000).continuousChanges();
+	}
+
+	public void run() {
+		try {
+			while (changes.hasNext()) {
+
+				if (changes.next() != null) {
+					ChangesResult.Row feed = changes.next();
+
+					JsonObject document = feed.getDoc();
+
+					Date date = new Date(System.currentTimeMillis());
+
+					clientGui.append(dateFormat.format(date)
+							+ "|\t "
+							+ document.get("username").getAsString()
+									.toUpperCase() + ":\n "
+							+ document.get("message").getAsString() + "\n");
+				}
+			}
+		} catch (CouchDbException e) {
+			// this.stop();
+			this.reconnect();
 		}
 	}
 
+	public void reconnect() {
+		for (String serverAddress : this.serverList) {
+			if (!serverAddress.equals(this.lastServer)) {
+				this.lastServer = serverAddress;
+				this.properties.setHost(serverAddress);
+				this.couchDbClient = new CouchDbClient(this.properties);
+				this.createChanges();
+				this.createReplication();
+
+				if (!this.isAlive())
+					this.start();
+				break;
+			}
+		}
+		this.run();
+	}
+
 	public void writeMessage(String msg, String username) {
-//		while (this.couchDbClient.contains("message" + messageID.toString())) {
-//			messageID++;
-//		}
+		// while (this.couchDbClient.contains("message" + messageID.toString()))
+		// {
+		// messageID++;
+		// }
 
 		// write into database
-//		map.put("_id", "message" + messageID.toString());
+		// map.put("_id", "message" + messageID.toString());
 		map.put("username", username);
 		map.put("message", msg);
 		map.put("timestamp", System.currentTimeMillis());// this.getDateAndTime());
@@ -113,8 +160,8 @@ public class DBClient extends Thread {
 			Date date = new Date(object.get("timestamp").getAsLong());
 
 			message = dateFormat.format(date) + "| "
-					+ object.get("username").getAsString().toUpperCase() + ":\n " 
-					+ object.get("message").getAsString() + "\n";
+					+ object.get("username").getAsString().toUpperCase()
+					+ ":\n " + object.get("message").getAsString() + "\n";
 			clientGui.append(message);
 		}
 	}

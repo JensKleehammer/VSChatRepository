@@ -17,7 +17,6 @@ import javax.swing.SwingConstants;
 import lombok.Getter;
 import lombok.Setter;
 
-
 /*
  * The Client with its GUI
  */
@@ -50,28 +49,28 @@ public class ClientGUI extends JFrame {
 		this.setUsername(username);
 		this.guiActionListener = new GUIActionListener(this);
 		this.setDbClient(new DBClient(this));
-		this.dbClient.start();
-		
+		if (!this.dbClient.isAlive())
+			this.dbClient.start();
+
 		// the Panels
-		JPanel northPanel = new JPanel(new GridLayout(1,1));
-		JPanel centerPanel = new JPanel(new GridLayout(2,1));
+		JPanel northPanel = new JPanel(new GridLayout(1, 1));
+		JPanel centerPanel = new JPanel(new GridLayout(2, 1));
 		JPanel southPanel = new JPanel();
-		
+
 		// The NorthPanel which is the chat room
-		
+
 		this.textArea = new JTextArea("", 30, 30);
 		this.textArea.setLineWrap(true);
 		this.textArea.setWrapStyleWord(true);
-		
-		
+
 		this.scrollPane = new JScrollPane(this.textArea);
-		this.scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		this.scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		this.scrollPane
+				.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		this.scrollPane
+				.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		northPanel.add(this.scrollPane);
 		this.textArea.setEditable(false);
 		this.add(northPanel, BorderLayout.NORTH);
-		
-
 
 		// the Label and the TextField
 		this.label = new JLabel("Message:", SwingConstants.LEFT);
@@ -83,20 +82,21 @@ public class ClientGUI extends JFrame {
 
 		this.logout = new JButton("Logout");
 		this.logout.addActionListener(this.guiActionListener);
-		this.logout.setEnabled(true);		// you have to login before being able to logout
+		this.logout.setEnabled(true); // you have to login before being able to
+										// logout
 
 		this.lastHour = new JButton("Last Hour");
 		this.lastHour.addActionListener(this.guiActionListener);
 		this.lastHour.setEnabled(true);
-		
+
 		this.lastSevenDays = new JButton("Last 7 days");
 		this.lastSevenDays.addActionListener(this.guiActionListener);
 		this.lastSevenDays.setEnabled(true);
-		
+
 		this.showAll = new JButton("Show all");
 		this.showAll.addActionListener(this.guiActionListener);
 		this.showAll.setEnabled(true);
-		
+
 		southPanel.add(logout);
 		southPanel.add(lastHour);
 		southPanel.add(lastSevenDays);
@@ -111,10 +111,9 @@ public class ClientGUI extends JFrame {
 
 	}
 
-	// called by the Client to append text in the TextArea 
+	// called by the Client to append text in the TextArea
 	public void append(String message) {
 		textArea.append(message);
 		textArea.setCaretPosition(textArea.getText().length() - 1);
 	}
 }
-
