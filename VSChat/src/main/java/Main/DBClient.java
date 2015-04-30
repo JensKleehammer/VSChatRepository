@@ -114,7 +114,6 @@ public class DBClient extends Thread {
 				}
 			}
 		} catch (CouchDbException e) {
-			// this.stop();
 			this.reconnect();
 		}
 	}
