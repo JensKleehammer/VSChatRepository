@@ -6,8 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.text.ChangedCharSetException;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +15,6 @@ import org.lightcouch.CouchDbClient;
 import org.lightcouch.CouchDbException;
 import org.lightcouch.CouchDbInfo;
 import org.lightcouch.CouchDbProperties;
-import org.lightcouch.Replication;
 import org.lightcouch.ReplicationResult;
 import org.lightcouch.Replicator;
 
@@ -48,6 +45,8 @@ public class DBClient extends Thread {
 		this.couchDBconnect();
 		this.clientGui = clientGui;
 		this.createChanges();
+		this.createReplication();
+		System.out.println(clientGui.getUsername() + " IP: "+ lastServer);
 	}
 
 	private void couchDBconnect() {
@@ -127,10 +126,10 @@ public class DBClient extends Thread {
 				this.properties.setHost(serverAddress);
 				this.couchDbClient = new CouchDbClient(this.properties);
 				this.createChanges();
-				this.createReplication();
 
 				if (!this.isAlive())
 					this.start();
+				System.out.println(clientGui.getUsername()+" neueIP: " +lastServer);
 				break;
 			}
 		}
