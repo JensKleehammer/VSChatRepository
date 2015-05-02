@@ -39,6 +39,10 @@ public class DBClient extends Thread {
 		this.dateFormat = new SimpleDateFormat("dd.MM.yyyy ' - ' HH:mm");
 		this.map = new HashMap<String, Object>();
 		this.messageID = 0;
+		
+/* Die IP - Adressen müssen angepasst werden sonst funktioniert das Programm 
+ * nicht		
+ */
 		this.serverList = new ArrayList<String>();
 		this.serverList.add("172.16.40.5");
 		this.serverList.add("172.16.49.92");
@@ -65,6 +69,9 @@ public class DBClient extends Thread {
 
 //	Generiert die Replicationen 
 	private void createReplication() {
+/*	In den Methoden source und target muss noch die IP und der Port 
+ *  angepasst werden da sonst die Replikationen nicht funktionieren
+ */
 		this.replicationOne = this.couchDbClient.replication()
 				.source("http://172.16.40.5:5984/chat")
 				.target("http://172.16.49.92:5984/chat").createTarget(true)
